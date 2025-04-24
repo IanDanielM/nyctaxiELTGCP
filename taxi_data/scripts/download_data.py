@@ -94,7 +94,7 @@ class DataDownloadAndLoad:
 async def main():
     downloader = DataDownloadAndLoad(base_url="https://d37ci6vzurychx.cloudfront.net/trip-data/",
                                      taxi_type=["yellow", "green"],
-                                     years=list(range(2020)))  # Years 2020-2025
+                                     years=list(range(2020, 2023)))  # Years 2020-2025
     await downloader.download_and_load_files()
 
 if __name__ == "__main__":
