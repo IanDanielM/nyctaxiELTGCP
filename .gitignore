@@ -8,4 +8,5 @@ data/
 *.csv
 .vscode
 uv.lock
+iac/
 
