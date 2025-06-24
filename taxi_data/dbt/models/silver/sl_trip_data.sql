@@ -1,82 +1,93 @@
-{{ config(
-    materialized = 'incremental',
-    unique_key = 'trip_id',
-) }}
+{{
+    config(
+        materialized='incremental',
+        unique_key='trip_id',
+        partition_by={
+            "field": "pickup_datetime",
+            "data_type": "timestamp",
+            "granularity": "day"
+        },
+        cluster_by=['pickup_location_id', 'payment_type'],
+        tags=['silver']
+    )
+}}
 
-
-WITH green_taxi AS (
-    SELECT 
-        trip_id,
-        lpep_pickup_datetime AS pickup_datetime,
-        lpep_dropoff_datetime AS dropoff_datetime,
-        passenger_count,
-        trip_distance,
-        RatecodeID,
-        PULocationID,
-        DOLocationID,
-        payment_type,
-        tip_amount,
-        ABS(fare_amount) AS fare_amount,
-        total_amount,
-        1 AS taxi_type
+WITH combined_taxi_data AS (
+    SELECT
+        SAFE_CAST(VendorID  AS INT64) AS vendor_id,
+        SAFE_CAST(lpep_pickup_datetime AS TIMESTAMP) AS pickup_datetime,
+        SAFE_CAST(lpep_dropoff_datetime AS TIMESTAMP) AS dropoff_datetime,
+        SAFE_CAST(RatecodeID AS INT64) AS rate_code_id,
+        SAFE_CAST(PULocationID AS INT64) AS pickup_location_id,
+        SAFE_CAST(DOLocationID AS INT64) AS dropoff_location_id,
+        SAFE_CAST(passenger_count AS INT64) AS passenger_count,
+        SAFE_CAST(trip_distance AS FLOAT64) AS trip_distance,
+        SAFE_CAST(fare_amount AS NUMERIC) AS fare_amount,
+        SAFE_CAST(payment_type AS INT64) AS payment_type,
+        SAFE_CAST(tip_amount AS NUMERIC) AS tip_amount,
+        SAFE_CAST(total_amount AS NUMERIC) AS total_amount,
+        SAFE_CAST(taxi_type AS STRING) AS taxi_type,
+        SAFE_CAST(trip_type AS INTEGER) AS trip_type
     FROM {{ ref('green_taxi_raw') }}
+    WHERE VendorID IS NOT NULL
+
+    UNION ALL
+
+    SELECT
+        SAFE_CAST(VendorID  AS INT64) AS vendor_id,
+        SAFE_CAST(tpep_pickup_datetime AS TIMESTAMP) AS pickup_datetime,
+        SAFE_CAST(tpep_dropoff_datetime AS TIMESTAMP) AS dropoff_datetime,
+        SAFE_CAST(RatecodeID AS INT64) AS rate_code_id,
+        SAFE_CAST(PULocationID AS INT64) AS pickup_location_id,
+        SAFE_CAST(DOLocationID AS INT64) AS dropoff_location_id,
+        SAFE_CAST(passenger_count AS INT64) AS passenger_count,
+        SAFE_CAST(trip_distance AS FLOAT64) AS trip_distance,
+        SAFE_CAST(fare_amount AS NUMERIC) AS fare_amount,
+        SAFE_CAST(payment_type AS INT64) AS payment_type,
+        SAFE_CAST(tip_amount AS NUMERIC) AS tip_amount,
+        SAFE_CAST(total_amount AS NUMERIC) AS total_amount,
+        SAFE_CAST(taxi_type AS STRING) AS taxi_type,
+        NULL AS trip_type
+    FROM {{ ref('yellow_taxi_raw') }}
+    WHERE VendorID IS NOT NULL
 ),
 
-yellow_taxi AS (
-    SELECT 
-        trip_id,
-        tpep_pickup_datetime AS pickup_datetime,
-        tpep_dropoff_datetime AS dropoff_datetime,
+cleaned_data AS (
+    SELECT
+        vendor_id,
+        pickup_datetime,
+        dropoff_datetime,
+        pickup_location_id,
+        dropoff_location_id,
         passenger_count,
         trip_distance,
-        RatecodeID,
-        PULocationID,
-        DOLocationID,
-        payment_type,
+        fare_amount,
         tip_amount,
-        ABS(fare_amount) AS fare_amount,
         total_amount,
-        2 as taxi_type
-    FROM {{ ref('yellow_taxi_raw') }}
-),
-
--- Union the green and yellow taxi data together
-combined_taxi_data AS (
-    SELECT * FROM green_taxi
-    UNION ALL
-    SELECT * FROM yellow_taxi
-),
-
--- Remove negative and zero values
-filtered_values AS (
-    SELECT *
+        taxi_type,
+        trip_type,
+        COALESCE(rate_code_id, 99) AS rate_code_id,
+        COALESCE(payment_type, 0) AS payment_type,
+        SAFE_CAST(TIMESTAMP_DIFF(dropoff_datetime, pickup_datetime, MINUTE) AS FLOAT64) AS trip_duration_minutes
     FROM combined_taxi_data
-    WHERE passenger_count > 0
+    WHERE
+        passenger_count > 0
         AND fare_amount > 0
         AND trip_distance > 0
-),
-
-updated_values AS (
-    SELECT 
-        *,
-        COALESCE(RatecodeID, 99) AS RatecodeID,
-        COALESCE(payment_type, 0) AS payment_type
-    FROM filtered_values
-),
-
--- Calculate trip duration
-calculated_trip_duration AS (
-    SELECT *,
-        round((
-            EXTRACT(EPOCH FROM dropoff_datetime) - EXTRACT(EPOCH FROM pickup_datetime)
-        ) / 60, 2) AS trip_duration_minutes
-    FROM updated_values
-    WHERE dropoff_datetime > pickup_datetime
+        AND dropoff_datetime > pickup_datetime -- Ensures duration is positive
 )
 
--- Final cleaned and transformed data
-SELECT *
-FROM calculated_trip_duration
+SELECT
+    {{ dbt_utils.generate_surrogate_key([
+        'vendor_id',
+        'pickup_datetime',
+        'dropoff_datetime',
+        'pickup_location_id',
+        'dropoff_location_id',
+        'total_amount'
+    ]) }} AS trip_id,
+    *
+FROM cleaned_data
 {% if is_incremental() %}
-WHERE trip_id > (SELECT MAX(trip_id) FROM {{ this }})
+    WHERE pickup_datetime > (SELECT MAX(pickup_datetime) FROM {{ this }})
 {% endif %}

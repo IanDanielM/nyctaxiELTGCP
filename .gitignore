@@ -9,4 +9,7 @@ data/
 .vscode
 uv.lock
 iac/
+package-lock.yml
+gcloudkeys.json
+.
 

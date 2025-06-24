@@ -33,7 +33,7 @@ models:
   nyc_taxi_project:
     bronze:
       schema: bronze
-      materialized: incremental
+      materialized: table
     silver:
       schema: silver
       materialized: incremental

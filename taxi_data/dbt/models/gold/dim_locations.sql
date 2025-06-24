@@ -1,8 +1,15 @@
 {{
     config(
         materialized = 'table',
-        unique_key = 'location_id'
+        unique_key = 'location_id',
+        tags=['gold']
     )
 }}
 
-SELECT LocationID AS location_id, Borough AS borough, Zone AS zone, service_zone FROM read_csv_auto('data/ext/taxi_zone_lookup.csv')
+SELECT
+    LocationID AS location_id,
+    Borough AS borough,
+    Zone AS zone,
+    service_zone
+FROM
+    {{ ref('taxi_zone_lookup') }}

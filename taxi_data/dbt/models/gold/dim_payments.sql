@@ -1,12 +1,14 @@
 {{
     config(
         materialized = 'table',
-        unique_key = 'payment_id'
+        unique_key = 'payment_id',
+        tags=['gold']
     )
 }}
 
-SELECT DISTINCT payment_type AS payment_id,
-CASE payment_type
+SELECT DISTINCT  COALESCE(payment_type, 0) AS payment_id,
+CASE COALESCE(payment_type, 0)
+    WHEN 0 THEN 'Unknown'
     WHEN 1 THEN 'Credit card'
     WHEN 2 THEN 'Cash'
     WHEN 3 THEN 'No charge'

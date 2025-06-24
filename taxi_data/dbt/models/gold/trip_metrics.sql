@@ -1,7 +1,8 @@
 {{
     config(
         materialized = 'table',
-        unique_key = 'trip_id'
+        unique_key = 'trip_id',
+        tags=['gold']
     )
 }}
 

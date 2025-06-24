@@ -3,7 +3,8 @@ import os
 from datetime import datetime
 
 import httpx
-import boto3
+from google.cloud import storage
+import uuid
 
 
 class DataDownloadAndLoad:
@@ -12,18 +13,22 @@ class DataDownloadAndLoad:
         self.taxi_type = taxi_type
         self.years = years
         self.download_dir = "data/raw"
-        self.s3_client = boto3.client('s3')
-        self.s3_bucket = "nyc-taxi-data-ed0a62da"
+        self.cloud_storage_client = storage.Client()
+        self.bucket_name = 'nyc-taxi-data-101253'
         os.makedirs(self.download_dir, exist_ok=True)
 
-    def _create_s3_folder(self):
-        s3 = boto3.resource('s3')
-        bucket = s3.Bucket(self.s3_bucket)
-        folder_name = "raw_data/"
-        bucket.put_object(Key=folder_name)
-        print(f"S3 folder created: {folder_name}")
-        return folder_name
 
+    def _create_storage_folder(self):
+        """
+        Create a folder in Google Cloud Storage with a unique name.
+        """
+        bucket = self.cloud_storage_client.bucket(self.bucket_name)
+        folder_name = f"raw_data"
+        blob = bucket.blob(folder_name + "/")
+        blob.upload_from_string('')
+        print(f"Created folder: {folder_name} in bucket: {self.bucket_name}")
+        return folder_name
+        
     async def download_file(self, url: str):
         async with httpx.AsyncClient(timeout=60) as client:
             response = await client.get(url)
@@ -47,9 +52,9 @@ class DataDownloadAndLoad:
             print(f"Downloading from URL: {url}")
             file_path = await self.download_file(url)
 
-            # If download was successful, upload to S3 with partitioning
+            # If download was successful, upload to bucket with partitioning
             if file_path:
-                self.upload_to_s3_partitioned(
+                self.upload_to_bucket_partitioned(
                     file_path, taxi_type, year, month_str)
 
     async def download_and_load_files(self):
@@ -64,37 +69,33 @@ class DataDownloadAndLoad:
                 tasks.append(self.process_file(year, month))
         await asyncio.gather(*tasks)
 
-    def upload_to_s3(self, file_path: str):
+    def upload_to_bucket(self, file_path: str):
         file_name = os.path.basename(file_path)
-        s3_key = f"raw_data/{file_name}"
-        self.s3_client.upload_file(file_path, self.s3_bucket, s3_key)
-        print(
-            f"Uploaded {file_name} to S3 bucket {self.s3_bucket} with key {s3_key}")
+        bucket_key = f"raw_data/{file_name}"
+        self.self.cloud_storage_client.bucket(self.bucket_name).blob(bucket_key).upload_from_filename(file_path)
+        print(f"Uploaded {file_name} to bucket {self.bucket_name} with key {bucket_key}")
 
-    def upload_to_s3_partitioned(self, file_path: str, taxi_type: str, year: int, month: str):
+    def upload_to_bucket_partitioned(self, file_path: str, taxi_type: str, year: int, month: str):
         """
-        Upload file to S3 with partitioning structure:
-        s3://bucket/taxi_type=yellow/year=2020/month=01/file.parquet
+        Upload file to bucket with partitioning structure:
         """
         file_name = os.path.basename(file_path)
-        s3_key = f"taxi_type={taxi_type}/year={year}/month={month}/{file_name}"
+        bucket_key = f"taxi_type={taxi_type}/year={year}/month={month}/{file_name}"
 
         try:
-            self.s3_client.upload_file(file_path, self.s3_bucket, s3_key)
-            print(
-                f"Uploaded {file_name} to S3 bucket {self.s3_bucket} with partitioned key: {s3_key}")
+            self.cloud_storage_client.bucket(self.bucket_name).blob(bucket_key).upload_from_filename(file_path)
+            print(f"Uploaded {file_name} to bucket {self.bucket_name} with partitioned key: {bucket_key}")
 
-            # Optionally delete local file after successful upload
             os.remove(file_path)
             print(f"Removed local file: {file_path}")
         except Exception as e:
-            print(f"Error uploading {file_name} to S3: {e}")
+            print(f"Error uploading {file_name} to bucket: {e}")
 
 
 async def main():
     downloader = DataDownloadAndLoad(base_url="https://d37ci6vzurychx.cloudfront.net/trip-data/",
                                      taxi_type=["yellow", "green"],
-                                     years=list(range(2020, 2023)))  # Years 2020-2025
+                                     years=list(range(2020, 2025)))  # Years 2020-2025
     await downloader.download_and_load_files()
 
 if __name__ == "__main__":
