@@ -4,7 +4,6 @@ from datetime import datetime
 
 import httpx
 from google.cloud import storage
-import uuid
 
 
 class DataDownloadAndLoad:
@@ -92,11 +91,11 @@ class DataDownloadAndLoad:
             print(f"Error uploading {file_name} to bucket: {e}")
 
 
-async def main():
+async def run_data():
     downloader = DataDownloadAndLoad(base_url="https://d37ci6vzurychx.cloudfront.net/trip-data/",
                                      taxi_type=["yellow", "green"],
                                      years=list(range(2020, 2025)))  # Years 2020-2025
     await downloader.download_and_load_files()
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# if __name__ == "__main__":
+#     asyncio.run(main())

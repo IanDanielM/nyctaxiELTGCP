@@ -11,5 +11,5 @@ uv.lock
 iac/
 package-lock.yml
 gcloudkeys.json
-.
-
+package-lock.json
+node_modules/
