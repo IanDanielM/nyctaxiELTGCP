@@ -20,16 +20,16 @@ WITH combined_taxi_data AS (
         SAFE_CAST(RatecodeID AS INT64) AS rate_code_id,
         SAFE_CAST(PULocationID AS INT64) AS pickup_location_id,
         SAFE_CAST(DOLocationID AS INT64) AS dropoff_location_id,
-        SAFE_CAST(passenger_count AS INT64) AS passenger_count,
+        SAFE_CAST(SAFE_CAST(passenger_count AS STRING) AS INT64) AS passenger_count,
         SAFE_CAST(trip_distance AS FLOAT64) AS trip_distance,
         SAFE_CAST(fare_amount AS NUMERIC) AS fare_amount,
-        SAFE_CAST(payment_type AS INT64) AS payment_type,
+        SAFE_CAST(SAFE_CAST(payment_type AS STRING) AS INT64) AS payment_type,
         SAFE_CAST(tip_amount AS NUMERIC) AS tip_amount,
         SAFE_CAST(total_amount AS NUMERIC) AS total_amount,
-        SAFE_CAST(taxi_type AS STRING) AS taxi_type,
+        SAFE_CAST('Green' AS STRING) AS taxi_type,
         SAFE_CAST(trip_type AS INTEGER) AS trip_type
     FROM {{ ref('green_taxi_raw') }}
-    WHERE VendorID IS NOT NULL
+    WHERE VendorID IS NOT NULL and passenger_count != floor(passenger_count)
 
     UNION ALL
 
@@ -40,16 +40,16 @@ WITH combined_taxi_data AS (
         SAFE_CAST(RatecodeID AS INT64) AS rate_code_id,
         SAFE_CAST(PULocationID AS INT64) AS pickup_location_id,
         SAFE_CAST(DOLocationID AS INT64) AS dropoff_location_id,
-        SAFE_CAST(passenger_count AS INT64) AS passenger_count,
+        SAFE_CAST(SAFE_CAST(passenger_count AS STRING) AS INT64) AS passenger_count,
         SAFE_CAST(trip_distance AS FLOAT64) AS trip_distance,
         SAFE_CAST(fare_amount AS NUMERIC) AS fare_amount,
-        SAFE_CAST(payment_type AS INT64) AS payment_type,
+        SAFE_CAST(SAFE_CAST(payment_type AS STRING) AS INT64) AS payment_type,
         SAFE_CAST(tip_amount AS NUMERIC) AS tip_amount,
         SAFE_CAST(total_amount AS NUMERIC) AS total_amount,
-        SAFE_CAST(taxi_type AS STRING) AS taxi_type,
+        SAFE_CAST('Yellow' AS STRING) AS taxi_type,
         NULL AS trip_type
     FROM {{ ref('yellow_taxi_raw') }}
-    WHERE VendorID IS NOT NULL
+    WHERE VendorID IS NOT NULL and passenger_count != floor(passenger_count)
 ),
 
 cleaned_data AS (

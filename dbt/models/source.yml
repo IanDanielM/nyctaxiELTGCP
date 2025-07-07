@@ -39,7 +39,7 @@ sources:
               data_type: INTEGER
               description: "Dropoff location ID"
             - name: passenger_count
-              data_type: FLOAT64
+              data_type: STRING
               description: "Number of passengers"
             - name: trip_distance
               data_type: FLOAT64
@@ -50,9 +50,6 @@ sources:
             - name: extra
               data_type: FLOAT64
               description: "Extra charges for the trip"
-            - name: mta_tax
-              data_type: FLOAT64
-              description: "MTA tax for the trip"
             - name: tip_amount
               data_type: FLOAT64
               description: "Tip amount for the trip"
@@ -62,9 +59,6 @@ sources:
             - name: improvement_surcharge
               data_type: FLOAT64
               description: "Improvement surcharge for the trip"
-            - name: ehail_fee
-              data_type: INTEGER
-              description: "E-hail fee for the trip"  
             - name: total_amount
               data_type: FLOAT64
               description: "Total amount for the trip"
@@ -74,9 +68,7 @@ sources:
             - name: trip_type
               data_type: FLOAT64
               description: "Trip type for the trip"
-            - name: congestion_surcharge
-              data_type: FLOAT64
-              description: "Congestion surcharge for the trip"
+
 
       - name: yellow_taxi_trips
         description: "Raw taxi trip data from NYC"
@@ -140,11 +132,8 @@ sources:
               data_type: FLOAT64
               description: "Total amount for the trip"
             - name: payment_type
-              data_type: INTEGER
-              description: "Payment type for the trip"
-            - name: congestion_surcharge
               data_type: FLOAT64
-              description: "Congestion surcharge for the trip"
+              description: "Payment type for the trip"
 
 
 
