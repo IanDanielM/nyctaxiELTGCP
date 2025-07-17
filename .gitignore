@@ -13,3 +13,4 @@ package-lock.yml
 gcloudkeys.json
 package-lock.json
 node_modules/
+taxi_data/

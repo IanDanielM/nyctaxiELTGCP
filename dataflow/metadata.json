@@ -1,0 +1,30 @@
+{
+  "name": "Process-Taxi-Data-To-BigQuery",
+  "description": "A Flex Template to process NYC Taxi parquet files and load them into a standardized BigQuery table.",
+  "parameters": [
+    {
+      "name": "input_bucket",
+      "label": "Input GCS Bucket",
+      "helpText": "The GCS bucket where the raw taxi data is stored. e.g., nyc-taxi-data-101253",
+      "isOptional": false
+    },
+    {
+      "name": "output_table",
+      "label": "Output BigQuery Table",
+      "helpText": "The full BigQuery table ID to write to. Format: your-project:your_dataset.your_table",
+      "isOptional": false
+    },
+    {
+        "name": "year",
+        "label": "Year (Optional)",
+        "helpText": "The year of the data to process. If omitted, all years will be processed.",
+        "isOptional": true 
+    },
+    {
+      "name": "month",
+      "label": "Month (Optional)",
+      "helpText": "The month of the data to process (1-12). If omitted, all months for the year will be processed.",
+      "isOptional": true
+    }
+  ]
+}

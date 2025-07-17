@@ -1,0 +1,28 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - '-t'
+      - gcr.io/${PROJECT_ID}/taxi-data-processor:latest
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - gcr.io/${PROJECT_ID}/taxi-data-processor:latest
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - dataflow
+      - flex-template
+      - build
+      - gs://dataflow-101253/templates/taxi-data-processor.json
+      - '--image=gcr.io/${PROJECT_ID}/taxi-data-processor:latest'
+      - '--sdk-language=PYTHON'
+      - '--metadata-file=metadata.json'
+
+images:
+  - gcr.io/${PROJECT_ID}/taxi-data-processor:latest
+
+

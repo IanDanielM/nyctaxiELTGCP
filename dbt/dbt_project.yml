@@ -31,9 +31,6 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   nyc_taxi_project:
-    bronze:
-      schema: bronze
-      materialized: table
     silver:
       schema: silver
       materialized: incremental
