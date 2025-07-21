@@ -117,7 +117,8 @@ class DataDownloadAndLoad:
             print(f"Successfully downloaded {file_name}")
             return file_path
         except httpx.HTTPStatusError as e:
-            if e.response.status_code == 404: print(f"File not found at {url} (404), skipping.")
+            if e.response.status_code == 404:
+                print(f"File not found at {url} (404), skipping.")
             else: print(f"Failed to download {url}. Status code: {e.response.status_code}")
             return None
         except Exception as e:
