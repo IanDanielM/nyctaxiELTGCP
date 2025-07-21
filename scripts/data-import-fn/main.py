@@ -112,7 +112,8 @@ class DataDownloadAndLoad:
             response.raise_for_status()
             file_name = url.split("/")[-1]
             file_path = os.path.join(self.download_dir, file_name)
-            with open(file_path, "wb") as f: f.write(response.content)
+            with open(file_path, "wb") as f:
+                f.write(response.content)
             print(f"Successfully downloaded {file_name}")
             return file_path
         except httpx.HTTPStatusError as e:
