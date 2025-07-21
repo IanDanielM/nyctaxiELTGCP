@@ -1,28 +1,32 @@
 steps:
-  - name: gcr.io/cloud-builders/docker
+  - name: 'gcr.io/cloud-builders/docker'
     args:
-      - build
+      - 'build'
       - '-t'
-      - gcr.io/${PROJECT_ID}/taxi-data-processor:latest
-      - .
+      - 'africa-south1-docker.pkg.dev/${PROJECT_ID}/nyc-taxi-run/taxi-data-processor:latest'
+      - '.'
 
-  - name: gcr.io/cloud-builders/docker
+  - name: 'gcr.io/cloud-builders/docker'
     args:
-      - push
-      - gcr.io/${PROJECT_ID}/taxi-data-processor:latest
+      - 'push'
+      - 'africa-south1-docker.pkg.dev/${PROJECT_ID}/nyc-taxi-run/taxi-data-processor:latest'
 
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
-      - dataflow
-      - flex-template
-      - build
-      - gs://dataflow-101253/templates/taxi-data-processor.json
-      - '--image=gcr.io/${PROJECT_ID}/taxi-data-processor:latest'
+      - 'dataflow'
+      - 'flex-template'
+      - 'build'
+      - 'gs://dataflow-101253/templates/taxi-data-processor.json'
+      - '--image=africa-south1-docker.pkg.dev/${PROJECT_ID}/nyc-taxi-run/taxi-data-processor:latest'
       - '--sdk-language=PYTHON'
       - '--metadata-file=metadata.json'
 
+timeout: '1200s'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'N1_HIGHCPU_8'
+
 images:
-  - gcr.io/${PROJECT_ID}/taxi-data-processor:latest
-
-
+  - 'africa-south1-docker.pkg.dev/${PROJECT_ID}/nyc-taxi-run/taxi-data-processor:latest'

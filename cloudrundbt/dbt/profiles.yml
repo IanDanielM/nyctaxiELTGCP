@@ -3,16 +3,15 @@ nyc_taxi_project:
     dev:
       project: dataengineer-463405
       dataset: nyctaxi
-      threads: 10
+      threads: 20
       type: bigquery
-      method: service-account
-      keyfile: /home/ian/nyc_taxi_project/gcloudkeys.json
+      method: oauth
       location: africa-south1
     prod:
       project: dataengineer-463405
       dataset: nyctaxi
-      threads: 10
+      threads: 20
       type: bigquery
       method: oauth
       location: africa-south1
-  target: dev
+  target: prod

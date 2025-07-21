@@ -14,3 +14,6 @@ gcloudkeys.json
 package-lock.json
 node_modules/
 taxi_data/
+tests/
+__pycache__
+.user.yml

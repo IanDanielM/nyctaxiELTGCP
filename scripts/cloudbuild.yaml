@@ -1,0 +1,24 @@
+substitutions:
+  _REGION: 'europe-west1'
+  _RUNTIME: 'python312'
+
+steps:
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'functions'
+      - 'deploy'
+      - 'nyc-taxi-data-importer'
+      - '--runtime=${_RUNTIME}'
+      - '--region=${_REGION}'
+      - '--source=./data-import-fn'
+      - '--trigger-http'
+      - '--allow-unauthenticated'
+      - '--entry-point=handler'
+      - '--memory=4096MB'
+      - '--timeout=540s'
+      - '--max-instances=5'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+

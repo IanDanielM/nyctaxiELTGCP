@@ -1,6 +1,6 @@
 {{
     config(
-        materialized = 'incremental',
+        materialized = 'table',
         unique_key = 'trip_id',
         tags=['gold'],
         partition_by={
@@ -11,6 +11,7 @@
         cluster_by=['pickup_location_id', 'dropoff_location_id', 'payment_id']
     )
 }}
+
 
 WITH trip_data AS (
     SELECT
@@ -85,6 +86,3 @@ SELECT
     dropoff_location_id,
     CAST(pickup_datetime AS DATE) AS pickup_date
 FROM final_data
-{% if is_incremental() %}
-    WHERE pickup_datetime > (SELECT MAX(pickup_datetime) FROM {{ this }})
-{% endif %}
