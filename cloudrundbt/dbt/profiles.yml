@@ -1,0 +1,17 @@
+nyc_taxi_project:
+  outputs:
+    dev:
+      project: dataengineer-463405
+      dataset: nyctaxi
+      threads: 20
+      type: bigquery
+      method: oauth
+      location: africa-south1
+    prod:
+      project: dataengineer-463405
+      dataset: nyctaxi
+      threads: 20
+      type: bigquery
+      method: oauth
+      location: africa-south1
+  target: prod

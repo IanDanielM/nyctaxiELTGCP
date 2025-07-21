@@ -1,0 +1,36 @@
+{
+  "name": "Taxi Data Processor",
+  "description": "Process NYC Taxi data from Parquet files to BigQuery",
+  "parameters": [
+    {
+      "name": "input_file_pattern",
+      "label": "Input file pattern",
+      "helpText": "GCS file pattern to read data from (e.g., gs://bucket/path/*/*.parquet)",
+      "paramType": "TEXT",
+      "isOptional": false
+    },
+    {
+      "name": "output_table",
+      "label": "Output BigQuery table",
+      "helpText": "BigQuery table to write results to (e.g., project:dataset.table)",
+      "paramType": "TEXT",
+      "isOptional": false
+    },
+    {
+      "name": "batch_size",
+      "label": "Batch size",
+      "helpText": "Batch size for reading parquet files",
+      "paramType": "TEXT",
+      "isOptional": true,
+      "defaultValue": "50000"
+    },
+    {
+      "name": "max_workers",
+      "label": "Maximum workers",
+      "helpText": "Maximum number of workers",
+      "paramType": "TEXT",
+      "isOptional": true,
+      "defaultValue": "5"
+    }
+  ]
+}

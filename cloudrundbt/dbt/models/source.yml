@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: nyctaxi
+    database: dataengineer-463405
+    schema: taxi_data
+    description: "Source data for the taxi dataset"
+    tables:
+      - name: standardized_trips
+        description: Standardized trips data from the NYC taxi dataset
