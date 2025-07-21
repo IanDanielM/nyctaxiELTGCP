@@ -48,6 +48,4 @@ SELECT
     ]) }} AS trip_id,
     *
 FROM cleaned_data
-{% if is_incremental() %}
-    WHERE pickup_datetime > (SELECT MAX(pickup_datetime) FROM {{ this }})
-{% endif %}
+-- Incremental logic removed because the model is materialized as 'table'
